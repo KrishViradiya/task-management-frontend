@@ -144,12 +144,45 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
     }
   };
 
+  // Calculate completion percentage for task
+  const getCompletionPercentage = () => {
+    if (task.status === "completed") return 100;
+    if (task.status === "in-progress") return 50;
+    return 0;
+  };
+
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
     <div
-      className="bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 overflow-hidden"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      className={`bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 overflow-hidden ${
+        isHovered ? "transform scale-[1.02]" : ""
+      }`}
+      onMouseEnter={() => {
+        setShowActions(true);
+        setIsHovered(true);
+      }}
+      onMouseLeave={() => {
+        setShowActions(false);
+        setIsHovered(false);
+      }}
     >
+      {/* Status indicator bar at the top */}
+      <div
+        className={`h-1 w-full ${
+          task.status === "completed"
+            ? "bg-green-500"
+            : task.status === "in-progress"
+            ? "bg-blue-500"
+            : "bg-gray-300"
+        }`}
+      >
+        <div
+          className="h-full bg-gradient-to-r from-blue-500 to-indigo-600"
+          style={{ width: `${getCompletionPercentage()}%` }}
+        ></div>
+      </div>
+
       <div className="p-5">
         {/* Status indicator at the top */}
         <div className="flex justify-between items-center mb-3">
@@ -167,7 +200,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
           <div className="flex space-x-1">
             <button
               onClick={() => onEdit(task)}
-              className={`p-1 rounded-full text-gray-400 hover:text-blue-500 transition-colors duration-150 ${
+              className={`p-1.5 rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 transition-all duration-150 ${
                 showActions ? "opacity-100" : "opacity-0"
               }`}
             >
@@ -182,7 +215,7 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
             </button>
             <button
               onClick={handleDelete}
-              className={`p-1 rounded-full text-gray-400 hover:text-red-500 transition-colors duration-150 ${
+              className={`p-1.5 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-150 ${
                 showActions ? "opacity-100" : "opacity-0"
               }`}
             >
@@ -303,32 +336,32 @@ export default function TaskCard({ task, onEdit }: TaskCardProps) {
             </div>
 
             {showCollaborators && (
-              <div className="flex flex-wrap gap-1 mb-2">
+              <div className="flex -space-x-2 mb-2 overflow-hidden">
                 {task.collaborators.map((collaborator, index) => (
                   <div
                     key={collaborator._id || index}
-                    className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full text-xs"
+                    className="inline-block h-8 w-8 rounded-full ring-2 ring-white"
+                    title={collaborator.username}
                   >
-                    <span className="h-4 w-4 rounded-full bg-blue-200 flex items-center justify-center text-blue-700 font-medium mr-1 text-[10px]">
+                    <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white font-medium">
                       {collaborator.username?.charAt(0).toUpperCase()}
-                    </span>
-                    <span>{collaborator.username}</span>
+                    </div>
                   </div>
                 ))}
 
                 <button
                   onClick={() => setShowInvite(!showInvite)}
-                  className="flex items-center bg-gray-50 text-gray-500 hover:text-gray-700 px-2 py-1 rounded-full text-xs"
+                  className="inline-flex items-center justify-center h-8 w-8 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 ring-2 ring-white"
+                  title="Add collaborator"
                 >
                   <svg
-                    className="h-3 w-3 mr-1"
+                    className="h-4 w-4"
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >
                     <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
                   </svg>
-                  Invite
                 </button>
               </div>
             )}
