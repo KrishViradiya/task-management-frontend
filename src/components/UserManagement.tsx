@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useAppSelector } from "../redux/store";
-import axios from "axios";
-import { API_BASE_URL } from "../config";
+import { adminAPI } from "../services/api";
 
 interface User {
   _id: string;
@@ -22,7 +21,7 @@ interface User {
 }
 
 export default function UserManagement() {
-  const { token } = useAppSelector((state) => state.auth);
+  const { user } = useAppSelector((state) => state.auth);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,11 +34,7 @@ export default function UserManagement() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${API_BASE_URL}/api/admin/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await adminAPI.getUsers();
       setUsers(response.data);
       setError(null);
     } catch (err: any) {
@@ -52,21 +47,15 @@ export default function UserManagement() {
 
   const updateUserRole = async (userId: string, role: string) => {
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/api/admin/users/${userId}/role`,
-        { role },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      
+      const response = await adminAPI.updateUserRole(userId, role);
+
       // Update the users list with the updated user
-      setUsers(users.map(user => 
-        user._id === userId ? { ...user, ...response.data.user } : user
-      ));
-      
+      setUsers(
+        users.map((user) =>
+          user._id === userId ? { ...user, ...response.data.user } : user
+        )
+      );
+
       setError(null);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to update user role");
@@ -76,24 +65,23 @@ export default function UserManagement() {
 
   const updateUserPermissions = async (userId: string, permissions: any) => {
     try {
-      const response = await axios.put(
-        `${API_BASE_URL}/api/admin/users/${userId}/permissions`,
-        { permissions },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await adminAPI.updateUserPermissions(
+        userId,
+        permissions
       );
-      
+
       // Update the users list with the updated user
-      setUsers(users.map(user => 
-        user._id === userId ? { ...user, ...response.data.user } : user
-      ));
-      
+      setUsers(
+        users.map((user) =>
+          user._id === userId ? { ...user, ...response.data.user } : user
+        )
+      );
+
       setError(null);
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to update user permissions");
+      setError(
+        err.response?.data?.message || "Failed to update user permissions"
+      );
       console.error("Error updating user permissions:", err);
     }
   };
@@ -102,17 +90,13 @@ export default function UserManagement() {
     if (!window.confirm("Are you sure you want to delete this user?")) {
       return;
     }
-    
+
     try {
-      await axios.delete(`${API_BASE_URL}/api/admin/users/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      
+      await adminAPI.deleteUser(userId);
+
       // Remove the deleted user from the list
-      setUsers(users.filter(user => user._id !== userId));
-      
+      setUsers(users.filter((user) => user._id !== userId));
+
       setError(null);
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to delete user");
@@ -124,15 +108,19 @@ export default function UserManagement() {
     updateUserRole(userId, role);
   };
 
-  const handlePermissionChange = (userId: string, permission: string, value: boolean) => {
-    const user = users.find(u => u._id === userId);
+  const handlePermissionChange = (
+    userId: string,
+    permission: string,
+    value: boolean
+  ) => {
+    const user = users.find((u) => u._id === userId);
     if (!user) return;
-    
+
     const updatedPermissions = {
       ...user.permissions,
-      [permission]: value
+      [permission]: value,
     };
-    
+
     updateUserPermissions(userId, updatedPermissions);
   };
 
@@ -141,17 +129,13 @@ export default function UserManagement() {
   }
 
   if (error) {
-    return (
-      <div className="text-center py-10 text-red-600">
-        Error: {error}
-      </div>
-    );
+    return <div className="text-center py-10 text-red-600">Error: {error}</div>;
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-2xl font-bold mb-6">User Management</h2>
-      
+
       {users.length === 0 ? (
         <p className="text-gray-500">No users found.</p>
       ) : (
@@ -174,7 +158,9 @@ export default function UserManagement() {
                   <td className="py-2 px-4 border-b">
                     <select
                       value={user.role}
-                      onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                      onChange={(e) =>
+                        handleRoleChange(user._id, e.target.value)
+                      }
                       className="border rounded px-2 py-1"
                     >
                       <option value="user">User</option>
@@ -190,13 +176,22 @@ export default function UserManagement() {
                             type="checkbox"
                             id={`${user._id}-${key}`}
                             checked={value}
-                            onChange={(e) => 
-                              handlePermissionChange(user._id, key, e.target.checked)
+                            onChange={(e) =>
+                              handlePermissionChange(
+                                user._id,
+                                key,
+                                e.target.checked
+                              )
                             }
                             className="mr-2"
                           />
-                          <label htmlFor={`${user._id}-${key}`} className="text-sm">
-                            {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          <label
+                            htmlFor={`${user._id}-${key}`}
+                            className="text-sm"
+                          >
+                            {key
+                              .replace(/([A-Z])/g, " $1")
+                              .replace(/^./, (str) => str.toUpperCase())}
                           </label>
                         </div>
                       ))}

@@ -15,7 +15,7 @@ const api = axios.create({
 // Request interceptor to add auth token as fallback
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if (token && !config.headers["Authorization"]) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
@@ -31,8 +31,8 @@ api.interceptors.response.use(
     // Handle 401 error (unauthorized)
     if (error.response && error.response.status === 401) {
       // Just clear the token, don't redirect (let the components handle redirection)
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
     }
 
     return Promise.reject(error);
@@ -54,7 +54,14 @@ export const authAPI = {
 
 // Task API
 export const taskAPI = {
-  createTask: (taskData: any) => api.post("/tasks", taskData),
+  createTask: (taskData: any) => {
+    // If collaboratorEmails is provided, move it to collaborators
+    if (taskData.collaboratorEmails) {
+      taskData.collaborators = taskData.collaboratorEmails;
+      delete taskData.collaboratorEmails;
+    }
+    return api.post("/tasks", taskData);
+  },
 
   getAllTasks: () => api.get("/tasks"),
 
@@ -85,6 +92,21 @@ export const notificationAPI = {
   markAllAsRead: () => api.put("/notifications/read-all"),
 
   getUnreadCount: () => api.get("/notifications/unread/count"),
+};
+
+// Admin API
+export const adminAPI = {
+  getUsers: () => api.get("/admin/users"),
+
+  getUserById: (id: string) => api.get(`/admin/users/${id}`),
+
+  updateUserRole: (id: string, role: string) =>
+    api.put(`/admin/users/${id}/role`, { role }),
+
+  updateUserPermissions: (id: string, permissions: any) =>
+    api.put(`/admin/users/${id}/permissions`, { permissions }),
+
+  deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
 };
 
 export default api;

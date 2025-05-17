@@ -56,8 +56,8 @@ export default function CreateTaskModal({
           priority,
           status,
           createdBy: user?.id || "",
-          collaborators: collaboratorEmails,
-        })
+          collaboratorEmails, // Send as a separate field
+        } as any)
       ).unwrap();
 
       // Reset form and close modal

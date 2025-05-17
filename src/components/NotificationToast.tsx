@@ -76,10 +76,9 @@ export default function NotificationToast() {
 
   // Handle clicking the notification (navigate to related task)
   const handleClick = () => {
-    if (activeNotification?.task?._id || activeNotification?.relatedTaskId) {
+    if (activeNotification?.relatedTaskId) {
       // Navigate to the task
-      const taskId =
-        activeNotification?.task?._id || activeNotification?.relatedTaskId;
+      const taskId = activeNotification.relatedTaskId;
       window.location.href = `/tasks/${taskId}`;
     }
     handleMarkAsRead();
