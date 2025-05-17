@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { ReduxProvider } from "../providers/ReduxProvider";
 import "./globals.css";
+import ClientLayout from "../components/ClientLayout";
 
 export const metadata = {
   title: "Task Management System",
@@ -12,7 +13,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen">
-        <ReduxProvider>{children}</ReduxProvider>
+        <ReduxProvider>
+          <ClientLayout>{children}</ClientLayout>
+        </ReduxProvider>
       </body>
     </html>
   );

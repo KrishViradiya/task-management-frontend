@@ -27,10 +27,11 @@ const createNoopStorage = () => {
   };
 };
 
-// Use localStorage if available, otherwise use noop storage
+// Use sessionStorage if available, otherwise use noop storage
+// This ensures each browser tab has its own isolated storage
 const storage =
   typeof window !== "undefined"
-    ? createWebStorage("local")
+    ? createWebStorage("session") // Use sessionStorage instead of localStorage
     : createNoopStorage();
 
 // Configure persist options
