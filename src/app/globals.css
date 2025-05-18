@@ -97,3 +97,9 @@ body {
 .text-shadow-lg {
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
 }
+
+/* Ensure form inputs always have visible text */
+input, textarea, select {
+  color: #1a202c !important; /* Dark gray text that's visible on both light and dark backgrounds */
+  background-color: white !important;
+}
